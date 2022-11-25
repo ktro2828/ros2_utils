@@ -1,0 +1,19 @@
+{
+  "[python]": {
+    "editor.tabSize": 4,
+    "editor.detectIndentation": false,
+    "editor.formatOnSave": true
+  },
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": false,
+  "python.linting.flake8Enabled": true,
+  "python.linting.lintOnSave": true,
+  "python.formatting.provider": "black",
+  "python.linting.flake8Args": [
+    "--max-line-length=120",
+    "--ignore=E203,W503,W504"
+  ],
+  "python.formatting.blackArgs": ["--line-length=120"],
+  "cSpell.words": ["dtype", "rosbag", "ndarray", "nanosec", "xlabel", "ylabel"],
+  "ros.distro": "galactic"
+}
