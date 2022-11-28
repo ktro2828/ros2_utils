@@ -7,9 +7,24 @@ from builtin_interfaces.msg import Time
 from ros2_utils.rosbag import BagFileParser
 
 
-def ros2unix_time(stamp: Time) -> np.uint64:
-    """Convert ROS timestamp to unix time."""
-    return np.uint64(stamp.sec + stamp.nanosec * 1e-9)
+def ros2unix(ros_time: Time) -> np.uint64:
+    """Convert ROS timestamp to unix time.
+    Args:
+        ros_time (Time)
+    Returns:
+        np.uint64
+    """
+    return np.uint64(ros_time.sec + ros_time.nanosec * 1e-9)
+
+
+def utc2unix(utc_time: float) -> np.uint64:
+    """Convert UTC timestamp to UNIX timestamp.
+    Args:
+        utc_time (float)
+    Returns:
+        np.uint64
+    """
+    return np.uint64(utc_time / 86400) + 25569
 
 
 class TimestampParser:
@@ -41,7 +56,7 @@ class TimestampParser:
                 dtype=np.uint64,
             )
             header_stamp: np.ndarray = np.array(
-                [ros2unix_time(msg.header.stamp) for _, msg in data],
+                [ros2unix(msg.header.stamp) for _, msg in data],
                 dtype=np.uint64,
             )
             ret[name] = np.stack([header_stamp, real_stamp])

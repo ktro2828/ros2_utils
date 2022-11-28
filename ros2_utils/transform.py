@@ -54,8 +54,7 @@ class TransformInterface(Node):
                 ret.append((trans, msg))
             except Exception as e:
                 print(e)
-                # ret.append((None, msg))
-                pass
+                ret.append((None, msg))
 
         return ret
 
