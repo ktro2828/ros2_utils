@@ -14,6 +14,17 @@
     "--ignore=E203,W503,W504"
   ],
   "python.formatting.blackArgs": ["--line-length=120"],
-  "cSpell.words": ["dtype", "rosbag", "ndarray", "nanosec", "xlabel", "ylabel"],
+  "cSpell.words": [
+    "dtype",
+    "rosbag",
+    "ndarray",
+    "nanosec",
+    "xlabel",
+    "ylabel",
+    "JARI",
+    "argmin",
+    "refxpos",
+    "refypos"
+  ],
   "ros.distro": "galactic"
 }

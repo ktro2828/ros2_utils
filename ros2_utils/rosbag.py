@@ -1,9 +1,12 @@
 import argparse
 import sqlite3
-from typing import Any, List, Tuple
+from typing import Any, Dict, List, Tuple
 
+import pandas as pd
 from rclpy.serialization import deserialize_message
 from rosidl_runtime_py.utilities import get_message
+
+from ros2_utils.utils import class2dict
 
 
 class BagFileParser:
@@ -27,7 +30,7 @@ class BagFileParser:
     def __del__(self) -> None:
         self.connect.close()
 
-    def get_messages(self, topic_name: str) -> List[Tuple[int, Any]]:
+    def get_msg(self, topic_name: str) -> List[Tuple[int, Any]]:
         """Returns the list of timestamps and messages.
         Args:
             topic_name (str): Target topic name.
@@ -41,15 +44,18 @@ class BagFileParser:
         # Deserialize all and timestamp them
         return [(timestamp, deserialize_message(data, self.topic_msg[topic_name])) for timestamp, data in rows]
 
+    def to_df(self, topic_name: str) -> pd.DataFrame:
+        msgs = self.get_msg(topic_name)
+        data_list: List[Dict[str, Any]] = []
+        for _, msg in msgs:
+            data_list.append(class2dict(msg))
+
 
 if __name__ == "__main__":
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument("-f", "--filepath", type=str, help="Bag file path(.db3)")
-    arg_parser.add_argument("-t", "--topics", type="+", help="topic1 topic2 ...")
+    # arg_parser.add_argument("-t", "--topics", type=str, nargs="+", help="topic1 topic2 ...")
     args = arg_parser.parse_args()
 
     parser = BagFileParser(args.filepath)
-
-    for topic in args.topics:
-        messages: List[Tuple[int, Any]] = parser.get_messages(topic)
-        print(messages)
+    parser.get_msg("/abd_robot/")
