@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Union
 
@@ -12,13 +13,27 @@ from ros2_utils.rosbag import BagFileParser
 
 
 def ros2unix(ros_time: Time) -> float:
-    """Convert ROS timestamp to unix time.
+    """Convert ROS timestamp to UNIX timestamp.
     Args:
         ros_time (Time)
     Returns:
         float
     """
     return ros_time.sec + ros_time.nanosec * 1e-9
+
+
+def unix2ros(unix_time: float) -> Time:
+    """Convert UNIX timestamp to ROS timestamp.
+    Args:
+        unix_time (float)
+    Returns:
+        ros_time (Time)
+    """
+    ros_time = Time()
+    nanosec, sec = math.modf(unix_time)
+    ros_time.sec = int(sec)
+    ros_time.nanosec = int(nanosec * 1e9)
+    return ros_time
 
 
 def ros2datetime(ros_time: Time, **kwargs) -> datetime:
@@ -115,10 +130,17 @@ class TimestampParser:
             ret[name] = np.diff(stamps[name][:, 0])
         return ret
 
-    def plot_delay(self, topic_names: Union[str, List[str]], ax: Optional[Axes] = None) -> Axes:
+    def plot_delay(
+        self,
+        topic_names: Union[str, List[str]],
+        ax: Optional[Axes] = None,
+    ) -> Axes:
         """Plot delay between header timestamp and real timestamp.
         Args:
             topic_names (Union[str, List[str]]): Name of target topic.
+            ax (Optional[Axes]): matplotlib.Axes. Defaults to None.
+        Returns:
+            ax (Axes): matplotlib.Axes.
         """
         if ax is None:
             _, ax = plt.subplots()
@@ -127,6 +149,7 @@ class TimestampParser:
         for name, stamp in stamps.items():
             x: np.ndarray = stamp[:, 0]
             y: np.ndarray = stamp[:, 1] - stamp[:, 0]
+            # Plot delay
             ax.plot(x, y, "+", label=name)
         ax.set_ylabel("delay [s]")
         ax.set_xlabel("timestamp [s]")

@@ -1,5 +1,3 @@
-
-
 # copied from https://github.com/ros2/geometry2/blob/rolling/tf2_geometry_msgs/src/tf2_geometry_msgs/tf2_geometry_msgs.py
 # due to fail to importing the package in ro2 environment
 
@@ -39,9 +37,16 @@ from typing import Iterable, Optional, Tuple
 
 import numpy as np
 import tf2_ros
-from geometry_msgs.msg import (PointStamped, Pose, PoseStamped,
-                               PoseWithCovarianceStamped, TransformStamped,
-                               Vector3Stamped)
+from geometry_msgs.msg import (
+    Point,
+    PointStamped,
+    Pose,
+    PoseStamped,
+    PoseWithCovarianceStamped,
+    TransformStamped,
+    Vector3,
+    Vector3Stamped,
+)
 
 
 def to_msg_msg(msg):
@@ -157,9 +162,7 @@ def transform_covariance(cov_in, transform):
     return cov_out.pose.covariance
 
 
-def _build_affine(
-    rotation: Optional[Iterable] = None, translation: Optional[Iterable] = None
-) -> np.ndarray:
+def _build_affine(rotation: Optional[Iterable] = None, translation: Optional[Iterable] = None) -> np.ndarray:
     """
     Build an affine matrix from a quaternion and a translation.
     :param rotation: The quaternion as [w, x, y, z]
@@ -270,7 +273,7 @@ def _decompose_affine(affine: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
 
 
 # PointStamped
-def do_transform_point(point: PointStamped, transform: TransformStamped) -> PointStamped:
+def do_transform_point_stamped(point: PointStamped, transform: TransformStamped) -> PointStamped:
     """
     Transform a `PointStamped` using a given `TransformStamped`.
     :param point: The point
@@ -292,11 +295,33 @@ def do_transform_point(point: PointStamped, transform: TransformStamped) -> Poin
     return res
 
 
-tf2_ros.TransformRegistration().add(PointStamped, do_transform_point)
+tf2_ros.TransformRegistration().add(PointStamped, do_transform_point_stamped)
+
+# PointStamped
+def do_transform_point(point: Point, transform: TransformStamped) -> Point:
+    """
+    Transform a `Point` using a given `TransformStamped`.
+    :param point: The point
+    :param transform: The transform
+    :returns: The transformed point
+    """
+    _, point = _decompose_affine(
+        np.matmul(
+            _transform_to_affine(transform),
+            _build_affine(translation=[point.x, point.y, point.z]),
+        )
+    )
+
+    res = PointStamped()
+    res.point.x = point[0]
+    res.point.y = point[1]
+    res.point.z = point[2]
+    res.header = transform.header
+    return res
 
 
 # Vector3Stamped
-def do_transform_vector3(vector3: Vector3Stamped, transform: TransformStamped) -> Vector3Stamped:
+def do_transform_vector3_stamped(vector3: Vector3Stamped, transform: TransformStamped) -> Vector3Stamped:
     """
     Transform a `Vector3Stamped` using a given `TransformStamped`.
     :param vector3: The vector3
@@ -320,7 +345,31 @@ def do_transform_vector3(vector3: Vector3Stamped, transform: TransformStamped) -
     return res
 
 
-tf2_ros.TransformRegistration().add(Vector3Stamped, do_transform_vector3)
+tf2_ros.TransformRegistration().add(Vector3Stamped, do_transform_vector3_stamped)
+
+
+# Vector3
+def do_transform_vector3(vector3: Vector3, transform: TransformStamped) -> Vector3:
+    """
+    Transform a `Vector3` using a given `TransformStamped`.
+    :param vector3: The vector3
+    :param transform: The transform
+    :returns: The transformed vector3
+    """
+    transform.transform.translation.x = 0.0
+    transform.transform.translation.y = 0.0
+    transform.transform.translation.z = 0.0
+    _, point = _decompose_affine(
+        np.matmul(
+            _transform_to_affine(transform),
+            _build_affine(translation=[vector3.x, vector3.y, vector3.z]),
+        )
+    )
+    res = Vector3()
+    res.x = point[0]
+    res.y = point[1]
+    res.z = point[2]
+    return res
 
 
 # Pose
@@ -392,6 +441,4 @@ def do_transform_pose_with_covariance_stamped(
     return res
 
 
-tf2_ros.TransformRegistration().add(
-    PoseWithCovarianceStamped, do_transform_pose_with_covariance_stamped
-)
+tf2_ros.TransformRegistration().add(PoseWithCovarianceStamped, do_transform_pose_with_covariance_stamped)

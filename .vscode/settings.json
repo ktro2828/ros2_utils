@@ -21,10 +21,7 @@
     "nanosec",
     "xlabel",
     "ylabel",
-    "JARI",
-    "argmin",
-    "refxpos",
-    "refypos"
+    "argmin"
   ],
   "ros.distro": "galactic"
 }
