@@ -1,6 +1,5 @@
 from __future__ import annotations
-import argparse
-import math
+
 from typing import Any, List, Optional, Tuple
 
 import rclpy
@@ -106,6 +105,9 @@ class TransformInterface(Node):
 
 
 if __name__ == "__main__":
+    import argparse
+    from tf2_geometry_msgs import do_transform_pose
+
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument("-f", "--filepath", type=str, help="Bag file path(.db3)")
     args = arg_parser.parse_args()
@@ -114,3 +116,8 @@ if __name__ == "__main__":
     transformer = TransformInterface.from_bag(args.filepath)
 
     ret = transformer.get_transform("/perception/object_recognition/detection/objects", "map")
+    for trans, msg in ret:
+        if trans is None:
+            continue
+        for obj in msg.objects:
+            transformed_pose = do_transform_pose(obj.kinematics.initial_pose_with_covariance.pose, trans)

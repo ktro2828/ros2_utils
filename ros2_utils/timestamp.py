@@ -174,3 +174,16 @@ class TimestampParser:
         ax.set_xlabel("timestamp [s]")
         ax.legend()
         return ax
+
+
+if __name__ == "__main__":
+    import argparse
+
+    arg_parser = argparse.ArgumentParser()
+    arg_parser.add_argument("-f", "--filepath", type=str, help="Bag file path(.db3)")
+    args = arg_parser.parse_args()
+
+    ts_parser = TimestampParser.from_bag(args.filepath)
+
+    ts_parser.plot_delay("/perception/object_recognition/objects")
+    plt.show()

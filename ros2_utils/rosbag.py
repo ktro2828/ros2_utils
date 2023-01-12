@@ -44,12 +44,6 @@ class BagFileParser:
         # Deserialize all and timestamp them
         return [(timestamp, deserialize_message(data, self.topic_msg[topic_name])) for timestamp, data in rows]
 
-    def to_df(self, topic_name: str) -> pd.DataFrame:
-        msgs = self.get_msg(topic_name)
-        data_list: List[Dict[str, Any]] = []
-        for _, msg in msgs:
-            data_list.append(class2dict(msg))
-
 
 if __name__ == "__main__":
     arg_parser = argparse.ArgumentParser()
@@ -58,4 +52,4 @@ if __name__ == "__main__":
     args = arg_parser.parse_args()
 
     parser = BagFileParser(args.filepath)
-    parser.get_msg("/abd_robot/")
+    ret: List[Tuple[int, Any]] = parser.get_msg("/perception/object_recognition/detection/objects")
